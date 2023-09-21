@@ -73,3 +73,11 @@ InstructGPT论文中，给出了上述三个步骤，分别制造/标注了多�
 - **SFT数据集**（即第一步人类根据prompt自己写理想的输出，SFT：supervised fine-tuning），包含**13K**的prompts；
 - **RM数据集**（即第二步用来训练打分模型的数据），包含**33K**的prompts；
 - **PPO数据集**（即第三步用来训练强化学习PPO模型的数据），包含**31K**的prompts。
+
+# RLHF具体算法&公式
+## 总优化公式
+![image](https://github.com/wtmlon/notebook_markdown/assets/37530985/01eb23ec-98ca-4ceb-8a31-c6b3a9945d6e)
+![image](https://github.com/wtmlon/notebook_markdown/assets/37530985/e10d6cb8-9ffa-4006-82e9-e9fe8633b7ac)
+
+其中πθ为语言模型输出，t 为生成序列的 index，A 代表的是这次语言模型输出的序列在每一个 index 上时候可以获得的预期期望。values 是一个[batch_size, seq_len]的shape，可以理解成句子生成到这个 token 时可以给这个流程打的总分：假设大模型生成了序列“abcde”，values 向量的值是[1,2,3,4,5]，那么t=2 这个时间点对应的 values[2]的数值可以理解为 critic 模型对语言模型生成"abc"这三个 tokens 打得分。
+- 对于 A 的概念中“预期期望”的理解可以是如下：假设语言模型为输入 query 生成了输出“abcde”共 5 个 tokens，那么在 t=1的时候，也就是在生成字母b 的时刻，会以token b后续生成的 tokens ”cde“的 values 值根据类似加权求和的方式求出在 t=2 这个时刻，模型给出token ‘b’这个预测行为的奖励期望，这是一个**根据结果评判过程的**方式，先有了整个结果在对生成过程进行复盘评价。
